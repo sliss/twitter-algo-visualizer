@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "responseHeaders": [
+        {
+          "header": "Content-Type",
+          "operation": "set",
+          "value": "application/json"
+        }
+      ]
+    },
+    "condition": {
+      "urlFilter": "https://twitter.com/i/api/graphql/*/Home*",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "responseHeaders": [
+        {
+          "header": "Content-Type",
+          "operation": "set",
+          "value": "application/json"
+        }
+      ]
+    },
+    "condition": {
+      "urlFilter": "https://api.twitter.com/*/timeline/*",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  }
+]
