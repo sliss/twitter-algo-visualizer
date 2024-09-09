@@ -1,30 +1,43 @@
-console.log("Background script starting...");
+console.log("Background script loaded");
 
-chrome.runtime.onInstalled.addListener(() => {
-  console.log("Extension installed or updated");
-});
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("Message received in background script:", message);
-  if (message.type === "CONTENT_SCRIPT_LOADED") {
-    console.log("Content script loaded message received");
-    sendResponse({ status: "Background script received the message" });
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log("Message received in background:", message);
+  if (message.type === "contentScriptLoaded") {
+    console.log("Content script loaded on:", sender.tab.url);
   }
-  return true; // Indicates that the response will be sent asynchronously
 });
 
-chrome.declarativeNetRequest.onRuleMatchedDebug.addListener((info) => {
-  console.log("Rule matched:", info);
+browser.webNavigation.onCompleted.addListener(function(details) {
+  console.log("Navigation completed:", details.url);
+}, { url: [{ hostContains: "twitter.com" }, { hostContains: "x.com" }] });
 
-  // Forward the intercepted request to the content script
-  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-    if (tabs[0]) {
-      chrome.tabs.sendMessage(tabs[0].id, {
-        type: "INTERCEPTED_REQUEST",
-        details: info
-      });
+browser.webRequest.onBeforeRequest.addListener(
+  function(details) {
+    console.log("Request intercepted:", details.url);
+    if (details.url.includes("HomeTimeline") || details.url.includes("home.json")) {
+      console.log("HomeTimeline request detected");
+      let filter = browser.webRequest.filterResponseData(details.requestId);
+      let decoder = new TextDecoder("utf-8");
+      let data = "";
+
+      filter.ondata = event => {
+        console.log("Receiving data");
+        data += decoder.decode(event.data, { stream: true });
+        filter.write(event.data);
+      }
+
+      filter.onstop = event => {
+        console.log("Data reception complete");
+        try {
+          console.log("HomeTimeline response:", JSON.parse(data));
+        } catch (e) {
+          console.error("Error parsing JSON:", e);
+          console.log("Raw data:", data);
+        }
+        filter.disconnect();
+      }
     }
-  });
-});
-
-console.log("Background script setup completed");
+  },
+  { urls: ["*://*.twitter.com/*", "*://*.x.com/*"] },
+  ["blocking"]
+);

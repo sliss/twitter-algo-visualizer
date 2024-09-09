@@ -2,35 +2,16 @@
   "manifest_version": 3,
   "name": "Twitter Algo Visualizer",
   "version": "1.0",
-  "description": "Visualize Twitter's recommendation strategies",
-  "permissions": [
-    "declarativeNetRequest",
-    "declarativeNetRequestFeedback",
-    "tabs",
-    "activeTab"
-  ],
-  "host_permissions": ["https://twitter.com/*", "https://api.twitter.com/*"],
+  "description": "Visualize Twitter's recommendation strategies by color-coding tweets.",
+  "permissions": ["webRequest", "webNavigation", "activeTab"],
+  "host_permissions": ["*://*.twitter.com/*", "*://*.x.com/*"],
   "background": {
-    "service_worker": "background.js"
+    "scripts": ["background.js"]
   },
   "content_scripts": [
     {
-      "matches": ["https://twitter.com/*"],
-      "js": ["content.js"],
-      "css": ["styles.css"],
-      "run_at": "document_idle"
+      "matches": ["*://*.twitter.com/*", "*://*.x.com/*"],
+      "js": ["content.js"]
     }
-  ],
-  "action": {
-    "default_popup": "popup.html"
-  },
-  "declarative_net_request": {
-    "rule_resources": [
-      {
-        "id": "ruleset_1",
-        "enabled": true,
-        "path": "rules.json"
-      }
-    ]
-  }
+  ]
 }
